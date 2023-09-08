@@ -1185,7 +1185,7 @@
   {
     "name": "midnight_purple",
     "bgColor": "#2a0041",
-    "mainColor": "#800080"
+    "mainColor": "#800080",
     "subColor": "#c0c0c0",
     "textColor": "#ffffff"
   }
