@@ -1181,6 +1181,13 @@
     "mainColor": "#363636",
     "subColor": "#4f4f4f",
     "textColor": "#1f1f1f"
+  },
+  {
+    "name": "midnight_purple",
+    "bgColor": "#2a0041",
+    "mainColor": "#800080"
+    "subColor": "#c0c0c0",
+    "textColor": "#ffffff"
   }
 
 ]
