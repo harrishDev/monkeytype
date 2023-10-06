@@ -27,6 +27,15 @@ declare namespace MonkeyTypes {
     languages: string[];
   }
 
+  interface AddNotificationOptions {
+    important?: boolean;
+    duration?: number;
+    customTitle?: string;
+    customIcon?: string;
+    closeCallback?: () => void;
+    allowHTML?: boolean;
+  }
+
   type Accents = [string, string][];
 
   interface LanguageObject {
@@ -128,6 +137,8 @@ declare namespace MonkeyTypes {
     | "11"
     | "12"
     | "13";
+
+  type PlaySoundOnError = "off" | "1" | "2" | "3";
 
   type SoundVolume = "0.1" | "0.5" | "1.0";
 
@@ -461,7 +472,7 @@ declare namespace MonkeyTypes {
     alwaysShowWordsHistory: boolean;
     singleListCommandLine: SingleListCommandLine;
     capsLockWarning: boolean;
-    playSoundOnError: boolean;
+    playSoundOnError: PlaySoundOnError;
     playSoundOnClick: PlaySoundOnClick;
     soundVolume: SoundVolume;
     startGraphsAtZero: boolean;

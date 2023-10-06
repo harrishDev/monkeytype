@@ -216,7 +216,7 @@ function handleSpace(): void {
     }
   } else {
     if (!nospace) {
-      if (!Config.playSoundOnError || Config.blindMode) {
+      if (Config.playSoundOnError === "off" || Config.blindMode) {
         Sound.playClick();
       } else {
         Sound.playError();
@@ -550,7 +550,7 @@ function handleChar(
   if (thisCharCorrect) {
     Sound.playClick();
   } else {
-    if (!Config.playSoundOnError || Config.blindMode) {
+    if (Config.playSoundOnError === "off" || Config.blindMode) {
       Sound.playClick();
     } else {
       Sound.playError();
@@ -820,7 +820,7 @@ function handleTab(event: JQuery.KeyDownEvent, popupVisible: boolean): void {
 
 let lastBailoutAttempt = -1;
 
-$(document).keydown(async (event) => {
+$(document).on("keydown", async (event) => {
   if (ActivePage.get() === "loading") return;
 
   if (IgnoredKeys.includes(event.key)) return;
@@ -1004,7 +1004,9 @@ $(document).keydown(async (event) => {
     (f) => f.functions?.preventDefaultEvent
   );
   if (funbox?.functions?.preventDefaultEvent) {
-    if (await funbox.functions.preventDefaultEvent(event)) {
+    if (
+      await funbox.functions.preventDefaultEvent(event as JQuery.KeyDownEvent)
+    ) {
       event.preventDefault();
       handleChar(event.key, TestInput.input.current.length);
       updateUI();
@@ -1037,7 +1039,7 @@ $(document).keydown(async (event) => {
   isBackspace = event.key === "Backspace" || event.key === "delete";
 });
 
-$("#wordsInput").keydown((event) => {
+$("#wordsInput").on("keydown", (event) => {
   if (event.originalEvent?.repeat) {
     console.log(
       "spacing debug keydown STOPPED - repeat",
@@ -1066,7 +1068,7 @@ $("#wordsInput").keydown((event) => {
   }, 0);
 });
 
-$("#wordsInput").keyup((event) => {
+$("#wordsInput").on("keyup", (event) => {
   if (event.originalEvent?.repeat) {
     console.log(
       "spacing debug keydown STOPPED - repeat",
@@ -1095,7 +1097,7 @@ $("#wordsInput").keyup((event) => {
   }, 0);
 });
 
-$("#wordsInput").keyup((event) => {
+$("#wordsInput").on("keyup", (event) => {
   if (!event.originalEvent?.isTrusted || TestUI.testRestarting) {
     event.preventDefault();
     return;
@@ -1121,7 +1123,10 @@ $("#wordsInput").on("input", (event) => {
   }
 
   const popupVisible = Misc.isAnyPopupVisible();
-  if (popupVisible) return;
+  if (popupVisible) {
+    event.preventDefault();
+    return;
+  }
 
   TestInput.setCurrentNotAfk();
 
@@ -1261,6 +1266,16 @@ $("#wordsInput").on("focus", (event) => {
 
 $("#wordsInput").on("copy paste", (event) => {
   event.preventDefault();
+});
+
+$("#wordsInput").on("select selectstart", (event) => {
+  event.preventDefault();
+});
+
+$("#wordsInput").on("keydown", (event) => {
+  if (event.key.startsWith("Arrow")) {
+    event.preventDefault();
+  }
 });
 
 // Composing events

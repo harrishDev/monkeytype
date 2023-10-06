@@ -1662,4 +1662,21 @@ export function replaceSpecialChars(str: string): string {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove accents
 }
 
+export function reloadAfter(seconds: number): void {
+  setTimeout(() => {
+    window.location.reload();
+  }, seconds * 1000);
+}
+
+export function updateTitle(title?: string): void {
+  const local = isLocalhost() ? "localhost - " : "";
+
+  if (!title) {
+    document.title =
+      local + "Monkeytype | A minimalistic, customizable typing test";
+  } else {
+    document.title = local + title;
+  }
+}
+
 // DO NOT ALTER GLOBAL OBJECTSONSTRUCTOR, IT WILL BREAK RESULT HASHES

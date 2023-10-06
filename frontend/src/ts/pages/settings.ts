@@ -251,7 +251,7 @@ async function initGroups(): Promise<void> {
     UpdateConfig.setPlaySoundOnError,
     "button",
     () => {
-      if (Config.playSoundOnError) Sound.playError();
+      if (Config.playSoundOnError !== "off") Sound.playError();
     }
   ) as SettingsGroup<MonkeyTypes.ConfigValues>;
   groups["playSoundOnClick"] = new SettingsGroup(
@@ -671,6 +671,21 @@ export function hideAccountSection(): void {
   $(`.sectionGroupTitle[group='account']`).addClass("hidden");
   $(`.settingsGroup.account`).addClass("hidden");
   $(`.pageSettings .section.needsAccount`).addClass("hidden");
+  $(".pageSettings .quickNav .accountTitleLink").addClass("hidden");
+}
+
+function showAccountSection(): void {
+  $(`.sectionGroupTitle[group='account']`).removeClass("hidden");
+  $(`.settingsGroup.account`).removeClass("hidden");
+  $(`.pageSettings .section.needsAccount`).removeClass("hidden");
+  $(".pageSettings .quickNav .accountTitleLink").removeClass("hidden");
+  refreshTagsSettingsSection();
+  refreshPresetsSettingsSection();
+  updateDiscordSection();
+
+  if (DB.getSnapshot()?.lbOptOut === true) {
+    $(".pageSettings .section.optOutOfLeaderboards").remove();
+  }
 }
 
 export function updateDiscordSection(): void {
@@ -827,19 +842,6 @@ function refreshPresetsSettingsSection(): void {
   }
 }
 
-function showAccountSection(): void {
-  $(`.sectionGroupTitle[group='account']`).removeClass("hidden");
-  $(`.settingsGroup.account`).removeClass("hidden");
-  $(`.pageSettings .section.needsAccount`).removeClass("hidden");
-  refreshTagsSettingsSection();
-  refreshPresetsSettingsSection();
-  updateDiscordSection();
-
-  if (DB.getSnapshot()?.lbOptOut === true) {
-    $(".pageSettings .section.optOutOfLeaderboards").remove();
-  }
-}
-
 export async function update(groupUpdate = true): Promise<void> {
   // Object.keys(groups).forEach((group) => {
   if (groupUpdate) {
@@ -910,42 +912,16 @@ export async function update(groupUpdate = true): Promise<void> {
 }
 
 function toggleSettingsGroup(groupName: string): void {
-  $(`.pageSettings .settingsGroup.${groupName}`)
-    .stop(true, true)
-    .slideToggle(250)
-    .toggleClass("slideup");
-  if ($(`.pageSettings .settingsGroup.${groupName}`).hasClass("slideup")) {
-    $(`.pageSettings .sectionGroupTitle[group=${groupName}] .fas`)
-      .stop(true, true)
-      .animate(
-        {
-          deg: -90,
-        },
-        {
-          duration: 250,
-          step: function (now) {
-            $(this).css({
-              transform: "rotate(" + now + "deg)",
-            });
-          },
-        }
-      );
+  const groupEl = $(`.pageSettings .settingsGroup.${groupName}`);
+  groupEl.stop(true, true).slideToggle(250).toggleClass("slideup");
+  if (groupEl.hasClass("slideup")) {
+    $(`.pageSettings .sectionGroupTitle[group=${groupName}]`).addClass(
+      "rotateIcon"
+    );
   } else {
-    $(`.pageSettings .sectionGroupTitle[group=${groupName}] .fas`)
-      .stop(true, true)
-      .animate(
-        {
-          deg: 0,
-        },
-        {
-          duration: 250,
-          step: function (now) {
-            $(this).css({
-              transform: "rotate(" + now + "deg)",
-            });
-          },
-        }
-      );
+    $(`.pageSettings .sectionGroupTitle[group=${groupName}]`).removeClass(
+      "rotateIcon"
+    );
   }
 }
 
@@ -1109,7 +1085,8 @@ $(".pageSettings .section.customBackgroundSize .inputAndButton .save").on(
   }
 );
 
-$(".pageSettings .section.customBackgroundSize .inputAndButton input").keypress(
+$(".pageSettings .section.customBackgroundSize .inputAndButton input").on(
+  "keypress",
   (e) => {
     if (e.key === "Enter") {
       UpdateConfig.setCustomBackground(
@@ -1134,22 +1111,25 @@ $(".pageSettings .section.fontSize .inputAndButton .save").on("click", () => {
   }
 });
 
-$(".pageSettings .section.fontSize .inputAndButton input").keypress((e) => {
-  if (e.key === "Enter") {
-    const didConfigSave = UpdateConfig.setFontSize(
-      parseFloat(
-        $(
-          ".pageSettings .section.fontSize .inputAndButton input"
-        ).val() as string
-      )
-    );
-    if (didConfigSave === true) {
-      Notifications.add("Saved", 1, {
-        duration: 1,
-      });
+$(".pageSettings .section.fontSize .inputAndButton input").on(
+  "keypress",
+  (e) => {
+    if (e.key === "Enter") {
+      const didConfigSave = UpdateConfig.setFontSize(
+        parseFloat(
+          $(
+            ".pageSettings .section.fontSize .inputAndButton input"
+          ).val() as string
+        )
+      );
+      if (didConfigSave === true) {
+        Notifications.add("Saved", 1, {
+          duration: 1,
+        });
+      }
     }
   }
-});
+);
 
 $(".pageSettings .section.customLayoutfluid .inputAndButton .save").on(
   "click",
@@ -1166,7 +1146,8 @@ $(".pageSettings .section.customLayoutfluid .inputAndButton .save").on(
   }
 );
 
-$(".pageSettings .section.customLayoutfluid .inputAndButton .input").keypress(
+$(".pageSettings .section.customLayoutfluid .inputAndButton .input").on(
+  "keypress",
   (e) => {
     if (e.key === "Enter") {
       UpdateConfig.setCustomLayoutfluid(
@@ -1255,7 +1236,7 @@ export const page = new Page(
     reset();
   },
   async () => {
-    Skeleton.append("pageSettings", "middle");
+    Skeleton.append("pageSettings", "main");
     await fillSettingsPage();
     await update(false);
   },

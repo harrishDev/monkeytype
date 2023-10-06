@@ -8,7 +8,6 @@ import * as AdController from "../controllers/ad-controller";
 import * as ChartController from "../controllers/chart-controller";
 import QuotesController from "../controllers/quotes-controller";
 import * as DB from "../db";
-import * as Keymap from "../elements/keymap";
 import * as Loader from "../elements/loader";
 import * as Notifications from "../elements/notifications";
 import * as ThemeColors from "../elements/theme-colors";
@@ -26,6 +25,7 @@ import * as TestStats from "./test-stats";
 import * as TestUI from "./test-ui";
 import * as TodayTracker from "./today-tracker";
 import * as ConfigEvent from "../observables/config-event";
+import * as Focus from "./focus";
 
 import confetti from "canvas-confetti";
 import type { AnnotationOptions } from "chartjs-plugin-annotation";
@@ -710,6 +710,7 @@ export async function update(
   ).scales;
   resultAnnotation = [];
   result = Object.assign({}, res);
+  $("#resultWordsHistory .words").empty();
   $("#result #resultWordsHistory").addClass("hidden");
   $("#retrySavingResultButton").addClass("hidden");
   $(".pageTest #result #rateQuoteButton .icon")
@@ -717,9 +718,8 @@ export async function update(
     .addClass("far");
   $(".pageTest #result #rateQuoteButton .rating").text("");
   $(".pageTest #result #rateQuoteButton").addClass("hidden");
-  $("#testModesNotice").css("opacity", 0);
   $("#words").removeClass("blurred");
-  $("#wordsInput").blur();
+  $("#wordsInput").trigger("blur");
   $("#result .stats .time .bottom .afk").text("");
   if (Auth?.currentUser) {
     $("#result .loginTip").addClass("hidden");
@@ -759,8 +759,8 @@ export async function update(
   }
 
   if (GlarsesMode.get()) {
-    $("#middle #result .noStressMessage").remove();
-    $("#middle #result").prepend(`
+    $("main #result .noStressMessage").remove();
+    $("main #result").prepend(`
 
       <div class='noStressMessage' style="
         text-align: center;
@@ -772,28 +772,28 @@ export async function update(
       </div>
 
     `);
-    $("#middle #result .stats").addClass("hidden");
-    $("#middle #result .chart").addClass("hidden");
-    $("#middle #result #resultWordsHistory").addClass("hidden");
-    $("#middle #result #resultReplay").addClass("hidden");
-    $("#middle #result .loginTip").addClass("hidden");
-    $("#middle #result #showWordHistoryButton").addClass("hidden");
-    $("#middle #result #watchReplayButton").addClass("hidden");
-    $("#middle #result #saveScreenshotButton").addClass("hidden");
+    $("main #result .stats").addClass("hidden");
+    $("main #result .chart").addClass("hidden");
+    $("main #result #resultWordsHistory").addClass("hidden");
+    $("main #result #resultReplay").addClass("hidden");
+    $("main #result .loginTip").addClass("hidden");
+    $("main #result #showWordHistoryButton").addClass("hidden");
+    $("main #result #watchReplayButton").addClass("hidden");
+    $("main #result #saveScreenshotButton").addClass("hidden");
 
     console.log(
       `Test Completed: ${result.wpm} wpm ${result.acc}% acc ${result.rawWpm} raw ${result.consistency}% consistency`
     );
   } else {
-    $("#middle #result .stats").removeClass("hidden");
-    $("#middle #result .chart").removeClass("hidden");
-    // $("#middle #result #resultWordsHistory").removeClass("hidden");
+    $("main #result .stats").removeClass("hidden");
+    $("main #result .chart").removeClass("hidden");
+    // $("main #result #resultWordsHistory").removeClass("hidden");
     if (!Auth?.currentUser) {
-      $("#middle #result .loginTip").removeClass("hidden");
+      $("main #result .loginTip").removeClass("hidden");
     }
-    $("#middle #result #showWordHistoryButton").removeClass("hidden");
-    $("#middle #result #watchReplayButton").removeClass("hidden");
-    $("#middle #result #saveScreenshotButton").removeClass("hidden");
+    $("main #result #showWordHistoryButton").removeClass("hidden");
+    $("main #result #watchReplayButton").removeClass("hidden");
+    $("main #result #saveScreenshotButton").removeClass("hidden");
   }
 
   if (window.scrollY > 0) {
@@ -809,16 +809,16 @@ export async function update(
     $("#result"),
     250,
     async () => {
+      $("#result").trigger("focus");
       AdController.renderResult();
       TestUI.setResultCalculating(false);
       $("#words").empty();
       ChartController.result.resize();
 
-      $("#result").trigger("focus");
       window.scrollTo({ top: 0 });
-      $("#testModesNotice").addClass("hidden");
     },
     async () => {
+      Focus.set(false);
       $("#resultExtraButtons").removeClass("hidden").css("opacity", 0).animate(
         {
           opacity: 1,
@@ -828,8 +828,7 @@ export async function update(
       if (Config.alwaysShowWordsHistory && !GlarsesMode.get()) {
         TestUI.toggleResultWords(true);
       }
-      Keymap.hide();
-      AdController.updateTestPageAds(true);
+      AdController.updateFooterAndVerticalAds(true);
     }
   );
 }
